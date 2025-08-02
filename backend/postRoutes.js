@@ -4,7 +4,7 @@ const ObjectId = require("mongodb").ObjectId
 
 let postRoutes = express.Router()
 
-postRoutes.route("./posts").get(async (request,response) => {
+postRoutes.route("/").get(async (request,response) => {
     let db = database.getDb()
     let data = await db.collection("posts").find({}).toArray()
     if(data.length>0){
@@ -15,7 +15,7 @@ postRoutes.route("./posts").get(async (request,response) => {
     }
 })
 
-postRoutes.route("./posts/:id").get(async (request,response) => {
+postRoutes.route("/:id").get(async (request,response) => {
     let db = database.getDb()
     let data = await db.collection("posts").findOne({_id: new ObjectId(request.params.id)})
     if(Object.keys(data).length>0){
@@ -26,7 +26,7 @@ postRoutes.route("./posts/:id").get(async (request,response) => {
     }
 })
 
-postRoutes.route("./posts").post(async (request,response) => {
+postRoutes.route("/").post(async (request,response) => {
     let db = database.getDb()
     let mongoObject = {
         title:request.body.title,
@@ -39,7 +39,7 @@ postRoutes.route("./posts").post(async (request,response) => {
     response.json(data)
 })
 
-postRoutes.route("/posts/:id").put(async (request,response) => {
+postRoutes.route("/:id").put(async (request,response) => {
     let db = database.getDb()
     let mongoObject = {
     $set: {
@@ -54,7 +54,7 @@ postRoutes.route("/posts/:id").put(async (request,response) => {
     response.json(data)
 })
 
-postRoutes.route("./posts/:id").delete(async (request,response) => {
+postRoutes.route("/:id").delete(async (request,response) => {
     let db = database.getDb()
     let data = await db.collection("posts").deleteOne({_id: new ObjectId(request.params.id)})
     response.json(data)
