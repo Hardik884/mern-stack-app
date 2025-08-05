@@ -1,37 +1,25 @@
-import { useState , useEffect } from 'react'
 import './App.css'
-import axios from "axios"
+import {HashRouter as Router,Routes,Route} from "react-router-dom"
+import {About} from '../pages/About'
+import { Contact } from "../pages/Contact";
+import { CreateBlog } from "../pages/CreateBlog";
+import { Home } from "../pages/Home";
+import { Landing } from "../pages/Landing";
+import { Profile } from "../pages/Profile";
+import { ReadBlog } from "../pages/ReadBlog";
 function App(){
-
-  const [data, setData] = useState()
-
-  function createPost(){
-    let postObject = {
-      title:"AAAA",
-      description:"BBBB",
-      content:"CCCC",
-      author:"DDDD",
-      datecreated: new Date(),
-    }
-
-    axios.post("http://localhost:3000/posts", postObject)
-  }
-
-  /*useEffect(() =>{
-    async function grabData(){
-      const response = await axios.get("http://localhost:3000/posts")
-      if(response.status === 200){
-        setData(response.data)
-      }
-    }
-    grabData()
-  },[])*/
   return (
-    <>
-    <button onClick={createPost}>Create Object</button>
-    
-    </>
-
+    < Router>
+      <Routes>
+        <Route path="/" element={<Landing/>}/>
+        <Route path="/home" element={<Home/>}/>
+        <Route path="/createblog" element={<CreateBlog/>}/>
+        <Route path="/readBlog" element={<ReadBlog/>}/>
+        <Route path="/profile" element={<Profile/>}/>
+        <Route path="/about" element={<About/>}/>
+        <Route path="/contact" element={<Contact/>}/>
+      </Routes>
+    </Router>
   )
 }
 export default App
