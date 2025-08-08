@@ -1,63 +1,65 @@
-const express = require("express")
-const database = require("./connect")
-const ObjectId = require("mongodb").ObjectId
+const express = require("express");
+const database = require("./connect");
+const { ObjectId } = require("mongodb");
 
-let postRoutes = express.Router()
+let postRoutes = express.Router();
 
-postRoutes.route("/").get(async (request,response) => {
-    let db = database.getDb()
-    let data = await db.collection("posts").find({}).toArray()
-    if(data.length>0){
-        response.json(data) 
+
+postRoutes.route("/").get(async (request, response) => {
+    try {
+        let db = database.getDb();
+        let data = await db.collection("posts").find({}).toArray();
+        response.json(data);
+    } catch (err) {
+        console.error("Error fetching posts:", err);
+        response.status(500).json({ message: "An internal server error occurred." });
     }
-    else{
-        throw new error("Data was not found :(")
-    }
-})
+});
 
-postRoutes.route("/:id").get(async (request,response) => {
-    let db = database.getDb()
-    let data = await db.collection("posts").findOne({_id: new ObjectId(request.params.id)})
-    if(Object.keys(data).length>0){
-        response.json(data) 
-    }
-    else{
-        throw new error("Data was not found :(")
-    }
-})
 
-postRoutes.route("/").post(async (request,response) => {
-    let db = database.getDb()
-    let mongoObject = {
-        title:request.body.title,
-        description:request.body.description,
-        content:request.body.content,
-        author:request.body.author,
-        datecreated:request.body.datecreated,
+postRoutes.route("/:id").get(async (request, response) => {
+    try {
+        if (!ObjectId.isValid(request.params.id)) {
+            return response.status(400).json({ message: "Invalid post ID format." });
+        }
+        let db = database.getDb();
+        let data = await db.collection("posts").findOne({ _id: new ObjectId(request.params.id) });
+
+        if (!data) {
+            return response.status(404).json({ message: "Post not found." });
+        }
+        response.json(data);
+    } catch (err) {
+        console.error("Error fetching single post:", err);
+        response.status(500).json({ message: "An internal server error occurred." });
     }
-    let data = await db.collection("posts").insertOne(mongoObject)
-    response.json(data)
-})
+});
 
-postRoutes.route("/:id").put(async (request,response) => {
-    let db = database.getDb()
-    let mongoObject = {
-    $set: {
-        title:request.body.title,
-        description:request.body.description,
-        content:request.body.content,
-        author:request.body.author,
-        datecreated:request.body.datecreated,
+postRoutes.route("/").post(async (request, response) => {
+    try {
+        let db = database.getDb();
+        const { title, description, content, author } = request.body;
+
+        if (!title || !description || !content) {
+            return response.status(400).json({ message: "Title, description, and content are required." });
+        }
+
+        let newPost = {
+            title: title,
+            description: description,
+            content: content,
+            author: author, 
+            datecreated: new Date(),
+        };
+
+        let result = await db.collection("posts").insertOne(newPost);
+        response.status(201).json({ message: "Post created successfully", postId: result.insertedId });
+
+    } catch (err) {
+        console.error("Error creating post:", err);
+        response.status(500).json({ message: "An internal server error occurred." });
     }
-}
-    let data = await db.collection("posts").updateOne({_id: new ObjectId(request.params.id)},mongoObject)
-    response.json(data)
-})
+});
 
-postRoutes.route("/:id").delete(async (request,response) => {
-    let db = database.getDb()
-    let data = await db.collection("posts").deleteOne({_id: new ObjectId(request.params.id)})
-    response.json(data)
-})
 
-module.exports = postRoutes
+module.exports = postRoutes;
