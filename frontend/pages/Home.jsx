@@ -1,4 +1,4 @@
-import {getPosts} from "../api"
+import { getPosts } from "../src/api"
 import {useState,useEffect} from "react"
 import { BlogCard } from "../src/components/BlogCard"
 export function Home(){
@@ -7,8 +7,8 @@ export function Home(){
 
     useEffect(() => {
         async function loadAllPosts(){
-            data.sort((d1,d2) => new Date(d2.dateCreated).getTime() - new Date(d1.dateCreated).getTime)
             const data = await getPosts()
+            data.sort((d1,d2) => new Date(d2.dateCreated).getTime() - new Date(d1.dateCreated).getTime())
             setPosts(data)
         }
         loadAllPosts()
