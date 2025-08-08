@@ -1,9 +1,9 @@
-
+import { CreateUser } from "./CreateUser"
 
 export function Landing(){
     return (
         <>
-            Landing Page
+            <CreateUser/>
         </>
     )
 }

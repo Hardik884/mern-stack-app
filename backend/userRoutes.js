@@ -1,9 +1,9 @@
 const express = require("express")
 const database = require("./connect")
 const ObjectId = require("mongodb").ObjectId
-
+const bcrypt = require("bcrypt")
 let userRoutes = express.Router()
-
+const SALT_ROUNDS = 6
 userRoutes.route("/").get(async (request,response) => {
     let db = database.getDb()
     let data = await db.collection("users").find({}).toArray()
@@ -28,15 +28,22 @@ userRoutes.route("/:id").get(async (request,response) => {
 
 userRoutes.route("/").post(async (request,response) => {
     let db = database.getDb()
+    const takenEmail = db.collection("users").findOne({email:request.body.email})
+    if (takenEmail){
+        response.json({message:"The email is taken"})
+    }
+    else{
+    const hash = bcrypt.hash(request.body.password, SALT_ROUNDS)
     let mongoObject = {
         name:request.body.name,
         email:request.body.email,
-        password:request.body.password,
+        password:hash,
         joinDate: new Date(),
         posts: []
     }
     let data = await db.collection("users").insertOne(mongoObject)
     response.json(data)
+}
 })
 
 userRoutes.route("/:id").put(async (request,response) => {
