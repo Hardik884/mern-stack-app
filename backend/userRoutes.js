@@ -3,6 +3,7 @@ const database = require("./connect");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
+require("dotenv").config({ path: "./config.env" });
 let userRoutes = express.Router();
 const SALT_ROUNDS = 10;
 
@@ -70,22 +71,34 @@ userRoutes.route("/:id").get(async (request, response) => {
 });
 
 
-userRoutes.route("/login").post(async (request, response) => {
-        let db = database.getDb()
-        const user = await db.collection("users").findOne({email:request.body.email})
 
-        if(user){
-            let confirmation = await bcrypt.compare(request.body.password,user.password)
-            if(confirmation){
-                const token = jwt.sign(user,process.env.SECRETKEY,{expiresIn: "1h"})
-                response.json({success:true,token})
-            }
-            else{
-                response.json({success:false,message:"Incorrect Password"})
-            }
+userRoutes.route("/login").post(async (request, response) => {
+    try {
+        let db = database.getDb();
+        const { email, password } = request.body;
+
+        if (!email || !password) {
+            return response.status(400).json({ message: "Email and password are required." });
         }
-        else{
-            response.json({success:false,message:"User not found"})
+
+        const user = await db.collection("users").findOne({ email: email });
+
+        if (!user) {
+            return response.status(401).json({ success: false, message: "User not found" });
         }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return response.status(401).json({ success: false, message: "Incorrect Password" });
+        }
+
+        const token = jwt.sign({ userId: user._id, name: user.name }, process.env.SECRETKEY, { expiresIn: "1h" });
+        response.status(200).json({ success: true, token: token });
+
+    } catch (err) {
+        console.error("Error during login:", err);
+        response.status(500).json({ message: "An internal server error occurred." });
+    }
 });
 module.exports = userRoutes;
