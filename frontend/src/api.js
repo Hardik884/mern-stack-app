@@ -64,3 +64,12 @@ export async function updateUser(id,user){
 
 }
 
+export async function verifyUser(user){
+    const response = axios.post(`${URL}/users/login`,user)
+    if(response.data.success){
+        return response.data.token
+    }else{
+        throw new Error(response.statusText)
+    }
+
+}

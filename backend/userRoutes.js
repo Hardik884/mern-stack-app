@@ -2,7 +2,8 @@ const express = require("express");
 const database = require("./connect");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken")
+require("dotenv").config({ path: "./config.env" });
 let userRoutes = express.Router();
 const SALT_ROUNDS = 10;
 
@@ -69,4 +70,23 @@ userRoutes.route("/:id").get(async (request, response) => {
     }
 });
 
+
+userRoutes.route("/login").post(async (request, response) => {
+        let db = database.getDb()
+        const user = await db.collection("users").findOne({email:request.body.email})
+
+        if(user){
+            let confirmation = await bcrypt.compare(request.body.password,user.password)
+            if(confirmation){
+                const token = jwt.sign(user,process.env.SECRETKEY,{expiresIn: "1h"})
+                response.json({success:true,token})
+            }
+            else{
+                response.json({success:false,message:"Incorrect Password"})
+            }
+        }
+        else{
+            response.json({success:false,message:"User not found"})
+        }
+});
 module.exports = userRoutes;
