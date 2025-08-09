@@ -1,12 +1,12 @@
 import { verifyUser } from "../src/api";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 export function Login() {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [user, setUser] = useState({
         email: "",
-        password: "" 
+        password: ""
     });
 
     function handleChange(e) {
@@ -14,21 +14,24 @@ export function Login() {
     }
 
     async function handleSubmit(e) {
-        e.preventDefault(); 
-        
+        e.preventDefault();
+
         try {
             const response = await verifyUser(user);
-            if (response.status === 201) {
-                alert("Account created successfully!");
-                navigate("/home"); 
-                sessionStorage.setItem("User",response)
-            } else {
-                alert("Something went wrong, but the server responded.");
+
+            if (response.status === 200 && response.data.success) {
+                alert("Login successful!");
+                
+                const token = response.data.token;
+
+                sessionStorage.setItem("token", token);
+                
+                navigate("/home");
             }
         } catch (error) {
-            const errorMessage = error.response?.data?.message || "User account could not be created. Please try again.";
+            const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
             alert(errorMessage);
-            console.error("Error creating user:", error);
+            console.error("Error logging in:", error);
         }
     }
 
