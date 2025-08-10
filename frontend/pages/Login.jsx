@@ -1,6 +1,7 @@
 import { verifyUser } from "../src/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export function Login() {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ export function Login() {
                 const token = response.data.token;
 
                 sessionStorage.setItem("token", token);
-                
+                axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
                 navigate("/home");
             }
         } catch (error) {

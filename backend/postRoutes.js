@@ -1,11 +1,30 @@
 const express = require("express");
 const database = require("./connect");
 const { ObjectId } = require("mongodb");
-
+const jwt = require('jsonwebtoken')
 let postRoutes = express.Router();
+require("dotenv").config({ path: "./config.env" });
 
+function verifyToken(request,response,next){
+    const authHeaders = request.headers["authorization"]
+    const token = authHeaders && authHeaders.split(' ')[1]
+    if(!token){
+        return response.status(401).json({message: "Authentication token is missing"})
+    }
 
-postRoutes.route("/").get(async (request, response) => {
+    jwt.verify(token,process.env.SECRETKEY,(error,decoded)=> {
+        if(error){
+            return response.status(403).json({message: "Invalid Token"})
+
+        }
+
+        request.user = decoded
+        next()
+
+    })
+}
+
+postRoutes.route("/").get(verifyToken , async (request, response) => {
     try {
         let db = database.getDb();
         let data = await db.collection("posts").find({}).toArray();
@@ -17,7 +36,7 @@ postRoutes.route("/").get(async (request, response) => {
 });
 
 
-postRoutes.route("/:id").get(async (request, response) => {
+postRoutes.route("/:id").get(verifyToken,async (request, response) => {
     try {
         if (!ObjectId.isValid(request.params.id)) {
             return response.status(400).json({ message: "Invalid post ID format." });
@@ -35,7 +54,7 @@ postRoutes.route("/:id").get(async (request, response) => {
     }
 });
 
-postRoutes.route("/").post(async (request, response) => {
+postRoutes.route("/").post(verifyToken,async (request, response) => {
     try {
         let db = database.getDb();
         const { title, description, content, author } = request.body;

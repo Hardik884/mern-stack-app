@@ -3,22 +3,27 @@
 export const pageData = [
     {
         name:"Home",
-        path:"/home"
+        path:"/home",
+        id:1
     },
     {
         name:"CreateBlog",
-        path:"/createblog"
+        path:"/createblog",
+        id:2
     },
     {
         name:"Profile",
-        path:"/profile"
+        path:"/profile",
+        id:3
     },
     {
         name:"About Us",
-        path:"/about"
+        path:"/about",
+        id:4
     },
     {
         name:"Contact",
-        path:"/contact"
+        path:"/contact",
+        id:5
     },
 ]
