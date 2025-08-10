@@ -67,7 +67,7 @@ postRoutes.route("/").post(verifyToken,async (request, response) => {
             title: title,
             description: description,
             content: content,
-            author: author, 
+            author: request.user.userId,
             datecreated: new Date(),
         };
 
@@ -76,6 +76,55 @@ postRoutes.route("/").post(verifyToken,async (request, response) => {
 
     } catch (err) {
         console.error("Error creating post:", err);
+        response.status(500).json({ message: "An internal server error occurred." });
+    }
+});
+
+// UPDATE a post by ID
+postRoutes.route("/:id").put(verifyToken, async (request, response) => {
+    try {
+        if (!ObjectId.isValid(request.params.id)) {
+            return response.status(400).json({ message: "Invalid post ID format." });
+        }
+        let db = database.getDb();
+        const { title, description, content } = request.body;
+
+        let postToUpdate = {
+            $set: {
+                title: title,
+                description: description,
+                content: content,
+            }
+        };
+
+        let result = await db.collection("posts").updateOne({ _id: new ObjectId(request.params.id) }, postToUpdate);
+
+        if (result.matchedCount === 0) {
+            return response.status(404).json({ message: "Post not found." });
+        }
+        response.status(200).json({ message: "Post updated successfully" });
+
+    } catch (err) {
+        console.error("Error updating post:", err);
+        response.status(500).json({ message: "An internal server error occurred." });
+    }
+});
+
+// DELETE a post by ID
+postRoutes.route("/:id").delete(verifyToken, async (request, response) => {
+    try {
+        if (!ObjectId.isValid(request.params.id)) {
+            return response.status(400).json({ message: "Invalid post ID format." });
+        }
+        let db = database.getDb();
+        let result = await db.collection("posts").deleteOne({ _id: new ObjectId(request.params.id) });
+
+        if (result.deletedCount === 0) {
+            return response.status(404).json({ message: "Post not found." });
+        }
+        response.status(200).json({ message: "Post deleted successfully" });
+    } catch (err) {
+        console.error("Error deleting post:", err);
         response.status(500).json({ message: "An internal server error occurred." });
     }
 });
