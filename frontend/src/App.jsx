@@ -10,7 +10,7 @@ import { ReadBlog } from "../pages/ReadBlog";
 import { Layout } from './components/Layout';
 import axios from 'axios';
 
-const token = sessionStorage.getItem("User");
+const token = sessionStorage.getItem("token");
 if (token) {
   axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
