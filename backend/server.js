@@ -5,7 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const posts = require("./postRoutes");
 const users = require("./userRoutes");
-
+const awsRoutes = require("./awsRoutes")
 const app = express();
 const PORT = 3000;
 
@@ -17,7 +17,7 @@ app.use(express.json());
 connect.connectToServer().then(() => {
   app.use('/posts', posts);
   app.use('/users', users); 
-
+  app.use(awsRoutes)
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
